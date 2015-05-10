@@ -1502,7 +1502,9 @@ Strophe.Connection = function (service, options)
     var proto = this.options.protocol || "";
 
     // Select protocal based on service or options
-    if (service.indexOf("ws:") === 0 || service.indexOf("wss:") === 0 ||
+    if(service === "direct") {
+        this._proto = new Strophe.DirectConnection(this);
+    } else if(service.indexOf("ws:") === 0 || service.indexOf("wss:") === 0 ||
             proto.indexOf("ws") === 0) {
         this._proto = new Strophe.Websocket(this);
     } else {

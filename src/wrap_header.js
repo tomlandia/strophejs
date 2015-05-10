@@ -18,6 +18,13 @@
  * that are still executing.
  */
 
+if(typeof DOMParser === 'undefined')
+    var DOMParser = require('xmldom').DOMParser;
+if(typeof document === 'undefined')
+    document = require("jsdom").jsdom("<html><head></head><body></body></html>");
+if(typeof window === 'undefined')
+    window = module.exports = {};
+
 /* jshint ignore:start */
 (function (callback) {
 /* jshint ignore:end */

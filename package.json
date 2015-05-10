@@ -37,8 +37,7 @@
     "MIT"
   ],
   "dependencies": {
-    "phantomjs": "^1.9.13",
-    "qunit-phantomjs-runner": "^2.1.0"
+    "xmldom": "*"
   },
   "main": "strophe.js",
   "browser": "strophe.js",
@@ -50,12 +49,15 @@
     "release": "grunt release"
   },
   "engines": {
-    "browser": "*"
+    "browser": "*",
+    "node": "*"
   },
   "volo": {
     "url": "https://raw.githubusercontent.com/strophe/strophejs/release-{version}/strophe.js"
   },
   "devDependencies": {
+    "phantomjs": "^1.9.13",
+    "qunit-phantomjs-runner": "^2.1.0",
     "bower": "latest",
     "grunt": "~0.4",
     "grunt-cli": "~0.1.13",

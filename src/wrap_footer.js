@@ -1,6 +1,6 @@
 /* jshint ignore:start */
 if (callback) {
-    return callback(Strophe, $build, $msg, $iq, $pres);
+    return callback(window.Strophe, window.$build, window.$msg, window.$iq, window.$pres);
 }
 
 
