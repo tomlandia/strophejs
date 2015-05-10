@@ -4011,10 +4011,10 @@ Strophe.DirectConnection.prototype = {
         this.socket = require('net').createConnection({host: this._conn.domain, port: 5222});
         this.socket.on('connect', this._onConnect.bind(this));
         this.socket.on('error', this._onError.bind(this));
-        //this.socket.on('end', this._onClose.bind(this));
+        this.socket.on('end', this._onClose.bind(this));
         this.socket.on('data', this._onData.bind(this));
-        this._stanzaNumber = 0;
-        this._buffer = '';
+        this.socket.setKeepAlive(true);
+        this._stream = ' ';
     },
 
     /** PrivateFunction: _connect_cb
@@ -4088,8 +4088,8 @@ Strophe.DirectConnection.prototype = {
      *
      * Nothing to do here for WebSockets
      */
-    //FIXIT
     _onClose: function() {
+        console.log('onClose')
         if(this._conn.connected && !this._conn.disconnecting) {
             Strophe.error("Socket closed unexcectedly");
             this._conn._doDisconnect();
@@ -4097,6 +4097,7 @@ Strophe.DirectConnection.prototype = {
             Strophe.info("Socket closed");
         }
     },
+    _doDisconnect: function() {},
 
     /** PrivateFunction: _no_auth_received
      *
@@ -4133,6 +4134,7 @@ Strophe.DirectConnection.prototype = {
      * (Object) error - The websocket error.
      */
     _onError: function(error) {
+        console.log("Socket error " + error);
         Strophe.error("Socket error " + error);
         this._conn._changeConnectStatus(Strophe.Status.CONNFAIL, "The direct connection could not be established and was disconnected.");
         this._disconnect();
@@ -4179,16 +4181,17 @@ Strophe.DirectConnection.prototype = {
      */
     _onData: function(data) {
         data = data.toString();
-        this._stanzaNumber += 1;
-        if(this._stanzaNumber < 2) {
-            this._buffer += data.replace(/^(<\?.*?\?>\s*)*/, "");
-            return;
-        } else if(this.stanzaNumber == 2) {
-            data = this._buffer + data + '</stream:stream>';
-            console.log(data);
+        if(this._stream) {
+            this._stream += data;
+            if(data.indexOf('</stream:stream>') > -1)
+                data = this._stream.replace(/^(<\?.*?\?>\s*)*/, "");
+            else
+                return;
         }
+        console.log(data);
+        //DOMParser = require('xmlshim').DOMParser
         var elem = new DOMParser().parseFromString("<wrapper>" + data + "</wrapper>", "text/xml").documentElement;
-        console.log(elem.toString())
+        console.log(elem.toString());
 
         //handle unavailable presence stanza before disconnecting
         if (this._conn.disconnecting &&
@@ -4200,10 +4203,13 @@ Strophe.DirectConnection.prototype = {
             // wait for the </stream:stream> tag before we close the connection
             return;
         }
-        if (this._stanzaNumber == 2)
+        if (this._stream) {
             this._conn._connect_cb(elem, null, data);
-        else
+            this._stream = null;
+        }
+        else {
             this._conn._dataRecv(elem, data);
+        }
     },
 
     /** PrivateFunction: _reqToData
